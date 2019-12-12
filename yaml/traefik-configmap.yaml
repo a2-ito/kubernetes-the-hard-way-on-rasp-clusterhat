@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-conf
+  namespace: kube-system
+data:
+  traefik.toml: |
+    defaultEntryPoints = ["http","https"]
+    debug = false
+    logLevel = "INFO"
+    #Config to redirect http to https
+    [entryPoints]
+      [entryPoints.traefik]
+        address = ":8080"
+      [entryPoints.http]
+        address = ":80"
+        compress = true
+        #[entryPoints.http.redirect]
+        #entryPoint = "https"
+      [entryPoints.https]
+        address = ":443"
+        compress = true
+        [entryPoints.https.tls]
+          [[entryPoints.https.tls.certificates]]
+          certFile = "/ssl/traefik-dashboard.rasp-cluster.local.crt"
+          keyFile  = "/ssl/traefik-dashboard.rasp-cluster.local.key"
+          #[[entryPoints.https.tls.certificates]]
+          #certFile = "/ssl/grafana.rasp-cluster.local.crt"
+          #keyFile  = "/ssl/grafana.rasp-cluster.local.key"
+          [[entryPoints.https.tls.certificates]]
+          certFile = "/ssl/docker-registry.rasp-cluster.local.crt"
+          keyFile  = "/ssl/docker-registry.rasp-cluster.local.key"
+    [api]
+      # Name of the related entry point
+      #
+      # Optional
+      # Default: "traefik"
+      #
+      entryPoint = "traefik"
+
+      # Enable Dashboard
+      #
+      # Optional
+      # Default: true
+      #
+      dashboard = true
+      [api.statistics]
+        recentErrors = 10
+    [kubernetes]
+      # Only create ingresses where the object has traffic-type: external label
+      labelselector = "traffic-type=external"
+    [metrics]
+      [metrics.prometheus]
+      buckets=[0.1,0.3,1.2,5.0]
+      entryPoint = "traefik"
+    [ping]
+      entryPoint = "http"
+    [accessLog]
+    [acme]
+      email = "email@gmail.com"
+      storage = "traefik-external-certificates/acme/account"
+      acmeLogging = true
+      entryPoint = "https"
+      OnHostRule = true
+      #caServer = "https://acme-v01.api.letsencrypt.org/directory"
+      [acme.httpChallenge]
+        entryPoint="http"
+

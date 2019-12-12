@@ -1,0 +1,17 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: traefik-docker-registry
+  namespace: docker-registry
+spec:
+  tls:
+  - secretName: docker-registry-cert
+  rules:
+  - host: docker-registry.rasp-cluster.local
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: docker-registry
+          servicePort: 5000
